@@ -59,3 +59,26 @@ class RegisterSerializer(serializers.ModelSerializer):
 
         return user
 
+
+class ResetVerificationSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def send_verification_email(self, email, otp_reset):
+        subject = 'OTP Verification'
+        message = f'Your OTP verification code is {otp_reset}'
+        from_email = settings.EMAIL_HOST_USER
+        to_email = email
+
+        try:
+            send_mail(subject, message, from_email, [to_email], fail_silently=False)
+        except BadHeaderError:
+            raise serializers.ValidationError('Invalid header found.')
+
+
+class OtpResetSerializer(serializers.Serializer):
+    otp_reset = serializers.CharField()
+    email = serializers.EmailField()
+
+    class Meta:
+        model = User
+        fields = ['otp_reset', 'email']
